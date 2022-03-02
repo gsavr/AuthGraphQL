@@ -1,10 +1,9 @@
 import { gql } from "@apollo/client";
 
 export default gql`
-  {
-    user {
+  mutation {
+    logout {
       id
-      name
       email
     }
   }

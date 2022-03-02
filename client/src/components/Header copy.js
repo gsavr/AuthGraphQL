@@ -1,51 +1,29 @@
 import React from "react";
+import { graphql } from "react-apollo";
 import CurrentUserQuery from "../queries/CurrentUser";
 import LogoutMutation from "../mutations/Logout";
-import { useQuery, useMutation } from "@apollo/client";
 import { Nav, Navbar, NavDropdown, Container } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
-import "../css/nav.css";
+import { Link } from "react-router-dom";
 
-const Header = () => {
-  const { data, loading } = useQuery(CurrentUserQuery);
-  const [logoutMutation] = useMutation(LogoutMutation);
-  const navigate = useNavigate();
+const Header = ({ data: { user, loading }, mutate }) => {
+  console.log(user);
 
   const onLogout = () => {
-    logoutMutation({
+    mutate({
       refetchQueries: [{ query: CurrentUserQuery }],
-    }).then(() => {
-      navigate("/");
     });
   };
 
-  const renderLinks = () => {
+  const renderButtons = () => {
     if (loading) {
-      return null;
+      return <Navbar.Text>...</Navbar.Text>;
     }
-    const { user } = data;
-    if (user) {
-      return (
-        <Nav.Link as={Link} to="/dashboard">
-          Dashboard
-        </Nav.Link>
-      );
-    }
-  };
-
-  const renderAuth = () => {
-    if (loading) {
-      return <Navbar.Text></Navbar.Text>;
-    }
-    const { user } = data;
     if (user) {
       return (
         <Navbar.Text>
-          Hello, {user.name}
+          Signed in as:{" "}
           <Link to="#" onClick={onLogout}>
-            <p className="row justify-content-end" style={{ margin: "0px" }}>
-              Logout
-            </p>
+            {user.name}
           </Link>
         </Navbar.Text>
       );
@@ -64,7 +42,7 @@ const Header = () => {
 
   return (
     <div>
-      <Navbar bg="dark" variant="dark" expand="sm">
+      <Navbar bg="dark" variant="dark" /* expand="lg" */>
         <Container>
           <Navbar.Brand as={Link} to="/">
             Auth-GraphQL
@@ -75,9 +53,11 @@ const Header = () => {
               <Nav.Link as={Link} to="/">
                 Home
               </Nav.Link>
-              {renderLinks()}
+              <Nav.Link as={Link} to="/">
+                Link
+              </Nav.Link>
             </Nav>
-            <Nav>{renderAuth()}</Nav>
+            <Nav>{renderButtons()}</Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
@@ -85,4 +65,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default graphql(LogoutMutation)(graphql(CurrentUserQuery)(Header));
